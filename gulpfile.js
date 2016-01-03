@@ -1,8 +1,16 @@
-var gulp = require('gulp');
-var marked = require('gulp-marked');
+var gulp = require('gulp'),
+    mds = require('markdown-styles'),
+    path = require('path');
 
-gulp.task('default', () => {
-  gulp.src('pre-article/*.md')
-    .pipe(marked({}))
-    .pipe(gulp.dest('article/'))
+
+
+
+gulp.task('default', (done) => {
+  var opts = mds.resolveArgs({
+    input: path.normalize(process.cwd() + '/pre-article'),
+    output: path.normalize(process.cwd() + '/article'),
+    layout: 'github'
+  });
+
+  mds.render(opts, done);
 });

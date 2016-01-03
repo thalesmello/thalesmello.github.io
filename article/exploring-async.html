@@ -1,4 +1,15 @@
-<h1 id="exploring-async-techniques-in-javascript">Exploring Async Techniques in JavaScript</h1>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+    <title>Exploring Async Techniques in JavaScript</title>
+    <link type="text/css" rel="stylesheet" href="assets/css/github-markdown.css">
+    <link type="text/css" rel="stylesheet" href="assets/css/pilcrow.css">
+    <link type="text/css" rel="stylesheet" href="assets/css/hljs-github.min.css"/>
+  </head>
+  <body>
+    <article class="markdown-body"><h1 id="exploring-async-techniques-in-javascript">Exploring Async Techniques in JavaScript</h1>
 <p>During the past few months, I&#39;ve been exploring a few different techniques that
 can be use to write asynchronous programs. I&#39;d like to share my experience via this essay.</p>
 <p>Even though we are using JavaScript for this, many of these techniques can be used
@@ -8,58 +19,54 @@ in other languages with equivalent manners.</p>
 and is used by almost all of the APIs in the language. It consists of passing
 a callback function as an argument in a function call, so the callback function
 is called when the desired behavior is supposed to happen.</p>
-<pre><code class="lang-js">setTimeout(() =&gt; console.log(&quot;Hello world!&quot;), 1000);
-// Hello world!
-</code></pre>
-<p>The problem here is that it can get messy really fast when you are
+<pre class="hljs"><code>setTimeout(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Hello world!"</span>), <span class="hljs-number">1000</span>);
+<span class="hljs-comment">// Hello world!</span></code></pre><p>The problem here is that it can get messy really fast when you are
 trying to make more complex programs, which leads to the frequent problem
 callback hell.</p>
-<pre><code class="lang-js">var aBootTime = 1000,
-    bBootTime = 1000,
-    queueCallback = null,
-    serverHandler = null;
+<pre class="hljs"><code><span class="hljs-keyword">var</span> aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
+    queueCallback = <span class="hljs-literal">null</span>,
+    serverHandler = <span class="hljs-literal">null</span>;
 
-console.log(&quot;A: Booting up system...&quot;)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>)
 setTimeout(() =&gt; {
-    console.log(&quot;A: Checking network connection&quot;);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
     setTimeout(() =&gt; {
-        console.log(&quot;A: Request complex computation&quot;);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
 
         sendRequest(value =&gt; {
-            console.log(&quot;A: Computation returned &quot; + value);
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
         });
-    }, 500);
+    }, <span class="hljs-number">500</span>);
 }, aBootTime);
 
-console.log(&quot;B: Booting up system...&quot;)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
 setTimeout(() =&gt; {
-    console.log(&quot;B: Server up and running&quot;);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
     serverHandler = (callback) =&gt; {
-        console.log(&quot;B: Starting heavy computation&quot;);
-        setTimeout(() =&gt; callback(42), 2000)
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        setTimeout(() =&gt; callback(<span class="hljs-number">42</span>), <span class="hljs-number">2000</span>)
     }
-    if (queueCallback) {
+    <span class="hljs-keyword">if</span> (queueCallback) {
         serverHandler(queueCallback);
-        queueCallback = null;
+        queueCallback = <span class="hljs-literal">null</span>;
     }
 }, bBootTime);
 
-function sendRequest(callback) {
-    if(serverHandler) {
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendRequest</span>(<span class="hljs-params">callback</span>) </span>{
+    <span class="hljs-keyword">if</span>(serverHandler) {
         serverHandler(callback);
-    } else {
+    } <span class="hljs-keyword">else</span> {
         queueCallback = callback;
     }
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>In the snippet above, we have servers A and B. As soon as server A boots up and
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>In the snippet above, we have servers A and B. As soon as server A boots up and
 checks its network connection, it sends a computation request to server B. Once
 the computation is done, server B responds to server A. Finally, server A prints
 the response to the screen. Because of the necessity for two different parts
@@ -68,69 +75,67 @@ state among the two different servers. That, in turn, make it really complicated
 to follow up what&#39;s going on in the code, hence the callback hell.</p>
 <p>One possible way we can improve the code above is to improve the code is
 to name the callbacks and reduce the indentation level of the named functions.</p>
-<pre><code class="lang-js">var aBootTime = 1000,
-    bBootTime = 1000,
-    queueCallback = null,
-    serverHandler = null;
+<pre class="hljs"><code><span class="hljs-keyword">var</span> aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
+    queueCallback = <span class="hljs-literal">null</span>,
+    serverHandler = <span class="hljs-literal">null</span>;
 
 serverA();
 serverB();
 
-function serverA() {
-    console.log(&quot;A: Booting up system...&quot;);
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverA</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>);
     setTimeout(checkNetwork, aBootTime);
 
-    function checkNetwork() {
-        console.log(&quot;A: Checking network connection&quot;);
-        setTimeout(sendRequest, 500);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkNetwork</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
+        setTimeout(sendRequest, <span class="hljs-number">500</span>);
     }
 
-    function sendRequest() {
-        console.log(&quot;A: Request complex computation&quot;);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendRequest</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
         sendNetworkRequest(callback);
     }
 
-    function callback(value) {
-        console.log(&quot;A: Computation returned &quot; + value);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callback</span>(<span class="hljs-params">value</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
     }
 }
 
-function serverB() {
-    console.log(&quot;B: Booting up system...&quot;)
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverB</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
     setTimeout(listenRequests, bBootTime);
 
-    function listenRequests() {
-        console.log(&quot;B: Server up and running&quot;);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listenRequests</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
         serverHandler = handler;
 
-        if (queueCallback) {
+        <span class="hljs-keyword">if</span> (queueCallback) {
             serverHandler(queueCallback);
-            queueCallback = null;
+            queueCallback = <span class="hljs-literal">null</span>;
         }
     }
 
-    function handler(callback) {
-        console.log(&quot;B: Starting heavy computation&quot;);
-        setTimeout(() =&gt; callback(42), 2000)
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handler</span>(<span class="hljs-params">callback</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        setTimeout(() =&gt; callback(<span class="hljs-number">42</span>), <span class="hljs-number">2000</span>)
     }
 }
 
-function sendNetworkRequest(callback) {
-    if(serverHandler) {
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendNetworkRequest</span>(<span class="hljs-params">callback</span>) </span>{
+    <span class="hljs-keyword">if</span>(serverHandler) {
         serverHandler(callback);
-    } else {
+    } <span class="hljs-keyword">else</span> {
         queueCallback = callback;
     }
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>Even though it&#39;s now easier to follow, there&#39;s a lot of room for improvement.
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>Even though it&#39;s now easier to follow, there&#39;s a lot of room for improvement.
 For that, let&#39;s go ahead to the next technique in our agenda.</p>
 <h2 id="promises">Promises</h2>
 <p>Promises are the solution preferred by the JavaScript community to avoid
@@ -140,82 +145,78 @@ function for when the Promise is done with our computation.</p>
 <p>The key point here is that, in every <code>.then</code> function call, a new Promise is
 returned when the previous callback is done. That allows us to chain Promises
 together, so we can compose really complex behaviors.</p>
-<pre><code class="lang-js">new Promise(resolve =&gt; setTimeout(() =&gt; resolve(&quot;Hello World!&quot;), 1000))
+<pre class="hljs"><code><span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(resolve =&gt; setTimeout(() =&gt; resolve(<span class="hljs-string">"Hello World!"</span>), <span class="hljs-number">1000</span>))
     .then(value =&gt; {
-        console.log(&quot;Value!&quot;);
-        return new Promise(resolve =&gt; setTimeout(() =&gt; resolve(&quot;I&#39;ll be back&quot;), 1000));
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Value!"</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(resolve =&gt; setTimeout(() =&gt; resolve(<span class="hljs-string">"I'll be back"</span>), <span class="hljs-number">1000</span>));
     })
-    .then(value =&gt; console.log(value));
-// Value!
-// I&#39;ll be back
-</code></pre>
-<p>With this new trick up our sleeves, let&#39;s try to rewrite our previous server
+    .then(value =&gt; <span class="hljs-built_in">console</span>.log(value));
+<span class="hljs-comment">// Value!</span>
+<span class="hljs-comment">// I'll be back</span></code></pre><p>With this new trick up our sleeves, let&#39;s try to rewrite our previous server
 example, but making use of the <a href="http://bluebirdjs.com/">Bluebird</a> library, which is an efficient
 implementation of Promises that has several support methods which we are going
 to use in these examples.</p>
-<pre><code class="lang-js">var Promise = require(&quot;bluebird&quot;),
-    aBootTime = 1000,
-    bBootTime = 1000,
+<pre class="hljs"><code><span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"bluebird"</span>),
+    aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
     promiseB;
 
 serverA();
 promiseB = serverB();
 
-function serverA() {
-    console.log(&quot;A: Booting up system...&quot;);
-    return Promise.delay(aBootTime)
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverA</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>);
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.delay(aBootTime)
         .then(checkNetwork)
-        .delay(500)
+        .delay(<span class="hljs-number">500</span>)
         .then(sendRequest);
 
     setTimeout(checkNetwork, aBootTime);
 
-    function checkNetwork() {
-        console.log(&quot;A: Checking network connection&quot;);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkNetwork</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
     }
 
-    function sendRequest() {
-        console.log(&quot;A: Request complex computation&quot;);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendRequest</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
         sendNetworkRequest(callback);
     }
 
-    function callback(value) {
-        console.log(&quot;A: Computation returned &quot; + value);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callback</span>(<span class="hljs-params">value</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
     }
 }
 
-function serverB() {
-    console.log(&quot;B: Booting up system...&quot;)
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverB</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
 
-    return Promise.delay(bBootTime).then(listenRequests);
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.delay(bBootTime).then(listenRequests);
 
-    function listenRequests() {
-        console.log(&quot;B: Server up and running&quot;);
-        return serverHandler;
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listenRequests</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
+        <span class="hljs-keyword">return</span> serverHandler;
     }
 
-    function serverHandler(callback) {
-        console.log(&quot;B: Starting heavy computation&quot;);
-        Promise.delay(2000).then(answerRequest);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverHandler</span>(<span class="hljs-params">callback</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        <span class="hljs-built_in">Promise</span>.delay(<span class="hljs-number">2000</span>).then(answerRequest);
 
-        function answerRequest() {
-            callback(42);
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">answerRequest</span>(<span class="hljs-params"></span>) </span>{
+            callback(<span class="hljs-number">42</span>);
         }
     }
 }
 
-function sendNetworkRequest(callback) {
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendNetworkRequest</span>(<span class="hljs-params">callback</span>) </span>{
     promiseB.then(serverHandler =&gt; serverHandler(callback));
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>Notice that, in the snippet above, we&#39;ve removed the shared state between
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>Notice that, in the snippet above, we&#39;ve removed the shared state between
 the servers. Previously, it was used to keep track of which server was up and
 running. Because Promises can simple callback once it&#39;s done with its
 computation, the need for shared state went away.</p>
@@ -226,49 +227,47 @@ function execution. <a href="http://bluebirdjs.com/">Bluebird</a> uses it to pro
 await the return of promises, almost as if it was a synchronous function call.
 Our previous example become a lot simpler once we make use of the coroutine
 feature.</p>
-<pre><code class="lang-js">var Promise = require(&quot;bluebird&quot;),
-    delay = Promise.delay,
-    promisify = Promise.promisify,
-    coroutine = Promise.coroutine,
-    aBootTime = 1000,
-    bBootTime = 1000,
+<pre class="hljs"><code><span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"bluebird"</span>),
+    delay = <span class="hljs-built_in">Promise</span>.delay,
+    promisify = <span class="hljs-built_in">Promise</span>.promisify,
+    coroutine = <span class="hljs-built_in">Promise</span>.coroutine,
+    aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
     promiseB;
 
 coroutine(serverA)();
 promiseB = coroutine(serverB)();
 
-function* serverA() {
-    console.log(&quot;A: Booting up system...&quot;);
-    yield delay(aBootTime);
-    console.log(&quot;A: Checking network connection&quot;);
-    yield delay(500);
-    console.log(&quot;A: Request complex computation&quot;);
-    var serverHandler = yield promiseB;
-    var value = yield serverHandler();
-    console.log(&quot;A: Computation returned &quot; + value);
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">serverA</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>);
+    <span class="hljs-keyword">yield</span> delay(aBootTime);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
+    <span class="hljs-keyword">yield</span> delay(<span class="hljs-number">500</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
+    <span class="hljs-keyword">var</span> serverHandler = <span class="hljs-keyword">yield</span> promiseB;
+    <span class="hljs-keyword">var</span> value = <span class="hljs-keyword">yield</span> serverHandler();
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
 }
 
-function* serverB() {
-    console.log(&quot;B: Booting up system...&quot;)
-    yield delay(bBootTime);
-    console.log(&quot;B: Server up and running&quot;);
-    return promisify(coroutine(serverHandler));
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">serverB</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
+    <span class="hljs-keyword">yield</span> delay(bBootTime);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
+    <span class="hljs-keyword">return</span> promisify(coroutine(serverHandler));
 
-    function* serverHandler(callback) {
-        console.log(&quot;B: Starting heavy computation&quot;);
-        yield delay(2000);
-        callback(null, 42);
+    <span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">serverHandler</span>(<span class="hljs-params">callback</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        <span class="hljs-keyword">yield</span> delay(<span class="hljs-number">2000</span>);
+        callback(<span class="hljs-literal">null</span>, <span class="hljs-number">42</span>);
     }
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>In the snippet above, the <code>coroutine</code> function takes in a generator <code>function*</code>,
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>In the snippet above, the <code>coroutine</code> function takes in a generator <code>function*</code>,
 which makes it possible to <code>yield</code> promises, get their response, and resume
 the function from where it left off. Notice that it manages to describe our
 problem with a greater simplicity, almost as if we were writing a synchronous
@@ -280,49 +279,47 @@ release. Nevertheless, it consists of the same idea of the Generator Coroutines 
 Inside an function marked with the <code>async</code> keyword, you&#39;re able to <code>await</code> the
 result of Promises, such that you have a very similar structure to the
 previous technique.</p>
-<pre><code class="lang-js">var Promise = require(&quot;bluebird&quot;),
-    delay = Promise.delay,
-    promisify = Promise.promisify,
-    coroutine = Promise.coroutine,
-    aBootTime = 1000,
-    bBootTime = 1000,
+<pre class="hljs"><code><span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"bluebird"</span>),
+    delay = <span class="hljs-built_in">Promise</span>.delay,
+    promisify = <span class="hljs-built_in">Promise</span>.promisify,
+    coroutine = <span class="hljs-built_in">Promise</span>.coroutine,
+    aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
     promiseB;
 
 serverA();
 promiseB = serverB();
 
-async function serverA() {
-    console.log(&quot;A: Booting up system...&quot;);
-    await delay(aBootTime);
-    console.log(&quot;A: Checking network connection&quot;);
-    await delay(500);
-    console.log(&quot;A: Request complex computation&quot;);
-    var serverHandler = await promiseB;
-    var value = await serverHandler();
-    console.log(&quot;A: Computation returned &quot; + value);
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverA</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>);
+    <span class="hljs-keyword">await</span> delay(aBootTime);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
+    <span class="hljs-keyword">await</span> delay(<span class="hljs-number">500</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
+    <span class="hljs-keyword">var</span> serverHandler = <span class="hljs-keyword">await</span> promiseB;
+    <span class="hljs-keyword">var</span> value = <span class="hljs-keyword">await</span> serverHandler();
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
 }
 
-async function serverB() {
-    console.log(&quot;B: Booting up system...&quot;)
-    await delay(bBootTime);
-    console.log(&quot;B: Server up and running&quot;);
-    return promisify(serverHandler);
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverB</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
+    <span class="hljs-keyword">await</span> delay(bBootTime);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
+    <span class="hljs-keyword">return</span> promisify(serverHandler);
 
-    async function serverHandler(callback) {
-        console.log(&quot;B: Starting heavy computation&quot;);
-        await delay(2000);
-        callback(null, 42);
+    <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverHandler</span>(<span class="hljs-params">callback</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        <span class="hljs-keyword">await</span> delay(<span class="hljs-number">2000</span>);
+        callback(<span class="hljs-literal">null</span>, <span class="hljs-number">42</span>);
     }
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>When you compare the snippet above with the previous example, you notice the
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>When you compare the snippet above with the previous example, you notice the
 syntax is a little cleaner, which is to be expected as that&#39;s the use case for
 which <code>async</code> and <code>await</code> were designed, whereas Generators were originally
 designed to generate enumerable values in a lazy manner. However, because this
@@ -335,90 +332,86 @@ JavaScript through <a href="https://github.com/Reactive-Extensions/RxJS">Rx.js</
 order functions (such as map, filter and reduce) over streams of asynchronous
 events. It makes it a more appropriate tool for when you have to manipulate
 several asynchronous events at once.  </p>
-<pre><code class="lang-js">var Rx = require(&quot;rx&quot;);
+<pre class="hljs"><code><span class="hljs-keyword">var</span> Rx = <span class="hljs-built_in">require</span>(<span class="hljs-string">"rx"</span>);
 
 Rx.Observable
-    .interval(500)
-    .map(x =&gt; x + 1)
-    .takeWhile(x =&gt; x &lt;= 3)
-    .concat(Rx.Observable.of(&quot;World&quot;))
-    .subscribe(x =&gt; console.log(&quot;Hello &quot; + x + &quot;!&quot;));
-// Hello 1!
-// Hello 2!
-// Hello 3!
-// Hello World!
-</code></pre>
-<p>In the snippet above, we make use of <code>map</code>, <code>takeWhile</code> and <code>concat</code> just as
+    .interval(<span class="hljs-number">500</span>)
+    .map(x =&gt; x + <span class="hljs-number">1</span>)
+    .takeWhile(x =&gt; x &lt;= <span class="hljs-number">3</span>)
+    .concat(Rx.Observable.of(<span class="hljs-string">"World"</span>))
+    .subscribe(x =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Hello "</span> + x + <span class="hljs-string">"!"</span>));
+<span class="hljs-comment">// Hello 1!</span>
+<span class="hljs-comment">// Hello 2!</span>
+<span class="hljs-comment">// Hello 3!</span>
+<span class="hljs-comment">// Hello World!</span></code></pre><p>In the snippet above, we make use of <code>map</code>, <code>takeWhile</code> and <code>concat</code> just as
 if we were working with an array. The difference here is that the events
 happen over time.</p>
 <p>Now, we are going to try to make use of Reactive Extensions to implement our
 server communication example.</p>
-<pre><code class="lang-js">var Promise = require(&quot;bluebird&quot;),
-    Rx = require(&quot;rx&quot;),
-    aBootTime = 1000,
-    bBootTime = 1000,
+<pre class="hljs"><code><span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"bluebird"</span>),
+    Rx = <span class="hljs-built_in">require</span>(<span class="hljs-string">"rx"</span>),
+    aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
     observableB;
 
 serverA();
 observableB = serverB();
 
-function serverA() {
-    console.log(&quot;A: Booting up system...&quot;);
-    return Rx.Observable.timer(aBootTime)
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverA</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>);
+    <span class="hljs-keyword">return</span> Rx.Observable.timer(aBootTime)
         .do(checkNetwork)
-        .delay(500)
+        .delay(<span class="hljs-number">500</span>)
         .flatMap(sendRequest)
         .subscribe(observer);
 
     setTimeout(checkNetwork, aBootTime);
 
-    function checkNetwork() {
-        console.log(&quot;A: Checking network connection&quot;);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkNetwork</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
     }
 
-    function sendRequest() {
-        console.log(&quot;A: Request complex computation&quot;);
-        return Rx.Observable.fromCallback(sendNetworkRequest)();
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendRequest</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
+        <span class="hljs-keyword">return</span> Rx.Observable.fromCallback(sendNetworkRequest)();
     }
 
-    function observer(value) {
-        console.log(&quot;A: Computation returned &quot; + value);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">observer</span>(<span class="hljs-params">value</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
     }
 }
 
-function serverB() {
-    console.log(&quot;B: Booting up system...&quot;)
-    var subject = new Rx.AsyncSubject();
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverB</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
+    <span class="hljs-keyword">var</span> subject = <span class="hljs-keyword">new</span> Rx.AsyncSubject();
     Rx.Observable.timer(bBootTime).map(listenRequests).subscribe(subject);
-    return subject;
+    <span class="hljs-keyword">return</span> subject;
 
-    function listenRequests() {
-        console.log(&quot;B: Server up and running&quot;);
-        return serverHandler;
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listenRequests</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
+        <span class="hljs-keyword">return</span> serverHandler;
     }
 
-    function serverHandler(callback) {
-        console.log(&quot;B: Starting heavy computation&quot;);
-        Rx.Observable.timer(2000).subscribe(answerRequest);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverHandler</span>(<span class="hljs-params">callback</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        Rx.Observable.timer(<span class="hljs-number">2000</span>).subscribe(answerRequest);
 
-        function answerRequest() {
-            callback(42);
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">answerRequest</span>(<span class="hljs-params"></span>) </span>{
+            callback(<span class="hljs-number">42</span>);
         }
     }
 }
 
-function sendNetworkRequest(callback) {
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendNetworkRequest</span>(<span class="hljs-params">callback</span>) </span>{
     observableB.subscribe(serverHandler =&gt; serverHandler(callback));
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>In the snippet above, we make use of an AsyncSubject in order for the Observable
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>In the snippet above, we make use of an AsyncSubject in order for the Observable
 result to be readily available when we subscribe to it. If you want to learn
 more about it, please read about <a href="http://www.introtorx.com/content/v1.0.10621.0/14_HotAndColdObservables.html">Hot and Cold observables</a>.</p>
 <p>From the snippet above, we notice the implementation is a lot more complicated
@@ -439,50 +432,48 @@ it blocks. If a process tries to read from a channel, but there is no other proc
 to it, it blocks.</p>
 <p>The <a href="https://github.com/ubolonton/js-csp">js-csp</a> library manages to implement it in JavaScript by also making a smart use of
 generators. Let&#39;s see how our servers example looks like with it.</p>
-<pre><code class="lang-js">var aBootTime = 1000,
-    bBootTime = 1000,
-    csp = require(&quot;js-csp&quot;),
+<pre class="hljs"><code><span class="hljs-keyword">var</span> aBootTime = <span class="hljs-number">1000</span>,
+    bBootTime = <span class="hljs-number">1000</span>,
+    csp = <span class="hljs-built_in">require</span>(<span class="hljs-string">"js-csp"</span>),
     timeout = csp.timeout,
     network = csp.chan();
 
 csp.go(serverA);
 csp.go(serverB);
 
-function* serverA() {
-    console.log(&quot;A: Booting up system...&quot;);
-    yield timeout(aBootTime);
-    console.log(&quot;A: Checking network connection&quot;);
-    yield timeout(500);
-    console.log(&quot;A: Request complex computation&quot;);
-    yield csp.put(network, &quot;request&quot;);
-    var value = yield csp.take(network);
-    console.log(&quot;A: Computation returned &quot; + value);
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">serverA</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Booting up system..."</span>);
+    <span class="hljs-keyword">yield</span> timeout(aBootTime);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Checking network connection"</span>);
+    <span class="hljs-keyword">yield</span> timeout(<span class="hljs-number">500</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Request complex computation"</span>);
+    <span class="hljs-keyword">yield</span> csp.put(network, <span class="hljs-string">"request"</span>);
+    <span class="hljs-keyword">var</span> value = <span class="hljs-keyword">yield</span> csp.take(network);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"A: Computation returned "</span> + value);
     network.close();
 }
 
-function* serverB() {
-    console.log(&quot;B: Booting up system...&quot;)
-    yield timeout(bBootTime);
-    console.log(&quot;B: Server up and running&quot;);
-    while(true) {
-        var request = yield csp.take(network);
-        if(request === csp.CLOSED) {
-            break;
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">serverB</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Booting up system..."</span>)
+    <span class="hljs-keyword">yield</span> timeout(bBootTime);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Server up and running"</span>);
+    <span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>) {
+        <span class="hljs-keyword">var</span> request = <span class="hljs-keyword">yield</span> csp.take(network);
+        <span class="hljs-keyword">if</span>(request === csp.CLOSED) {
+            <span class="hljs-keyword">break</span>;
         }
-        console.log(&quot;B: Starting heavy computation&quot;);
-        yield timeout(2000);
-        yield csp.put(network, 42);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"B: Starting heavy computation"</span>);
+        <span class="hljs-keyword">yield</span> timeout(<span class="hljs-number">2000</span>);
+        <span class="hljs-keyword">yield</span> csp.put(network, <span class="hljs-number">42</span>);
     };
 }
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-</code></pre>
-<p>In the snippet above, each time we have a <code>yield csp.put</code>, we write to the channel.
+<span class="hljs-comment">// A: Booting up system...</span>
+<span class="hljs-comment">// B: Booting up system...</span>
+<span class="hljs-comment">// A: Checking network connection</span>
+<span class="hljs-comment">// B: Server up and running</span>
+<span class="hljs-comment">// A: Request complex computation</span>
+<span class="hljs-comment">// B: Starting heavy computation</span>
+<span class="hljs-comment">// A: Computation returned 42</span></code></pre><p>In the snippet above, each time we have a <code>yield csp.put</code>, we write to the channel.
 Each time we have a <code>yield csp.take</code>, we block execution until there is a value to
 read from. Differently than the Generator Coroutines method, here we have a direct
 communication channel between the two servers. CSP makes the code looks like as if
@@ -527,7 +518,7 @@ below.</p>
 
 <p>Please take notice these techniques aren&#39;t mutually exclusive.</p>
 <p>In my use cases, I&#39;d probably adopt the following strategies:</p>
-<ul>
+<ul class="list">
 <li><p>In simple function calls, I&#39;m are probably better off with callbacks</p>
 </li>
 <li><p>When I have to deal with many different asynchronous returns, maybe
@@ -540,3 +531,6 @@ the cursor on the screen, that&#39;s probably more easily handled with Reactive 
 be better off with CSP.</p>
 </li>
 </ul>
+    </article>
+  </body>
+</html>
