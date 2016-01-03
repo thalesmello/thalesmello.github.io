@@ -1,26 +1,7 @@
-<script src="https://embed.tonicdev.com"></script>
-
-<script src="https://rawgit.com/stackp/promisejs/master/promise.min.js"></script>
-
-<script>
-promise.get('https://rawgit.com/thalesmello/exploring-async/master/01_callback_hello_world.js')
-.then(function (err, data) {
-    console.log(data);
-    
-    Tonic.createNotebook({
-        element: document.getElementById("my-element"),
-        source: data,
-        readOnly: false
-    })
-});
-</script>
-
-<div id="my-element"></div>
-
 # Exploring Async Techniques in JavaScript
 
 During the past few months, I've been exploring a few different techniques that
-can be use to write asynchronous programs. I'd like to share my experience via this essay.
+can be used to write asynchronous programs. I'd like to share my experience via this essay.
 
 Even though we are using JavaScript for this, many of these techniques can be used
 in other languages with equivalent manners.
@@ -32,64 +13,13 @@ and is used by almost all of the APIs in the language. It consists of passing
 a callback function as an argument in a function call, so the callback function
 is called when the desired behavior is supposed to happen.
 
-<!-- anywhere else on your page -->
-<div id="snippet-01"></div>
-
-```js
-setTimeout(() => console.log("Hello world!"), 1000);
-// Hello world!
-```
+<a class="jsbin-embed" href="http://jsbin.com/coyowu/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 The problem here is that it can get messy really fast when you are
 trying to make more complex programs, which leads to the frequent problem
 callback hell.
 
-```js
-var aBootTime = 1000,
-    bBootTime = 1000,
-    queueCallback = null,
-    serverHandler = null;
-
-console.log("A: Booting up system...")
-setTimeout(() => {
-    console.log("A: Checking network connection");
-    setTimeout(() => {
-        console.log("A: Request complex computation");
-
-        sendRequest(value => {
-            console.log("A: Computation returned " + value);
-        });
-    }, 500);
-}, aBootTime);
-
-console.log("B: Booting up system...")
-setTimeout(() => {
-    console.log("B: Server up and running");
-    serverHandler = (callback) => {
-        console.log("B: Starting heavy computation");
-        setTimeout(() => callback(42), 2000)
-    }
-    if (queueCallback) {
-        serverHandler(queueCallback);
-        queueCallback = null;
-    }
-}, bBootTime);
-
-function sendRequest(callback) {
-    if(serverHandler) {
-        serverHandler(callback);
-    } else {
-        queueCallback = callback;
-    }
-}
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-```
+<a class="jsbin-embed" href="http://jsbin.com/qupogav/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 In the snippet above, we have servers A and B. As soon as server A boots up and
 checks its network connection, it sends a computation request to server B. Once
@@ -102,69 +32,7 @@ to follow up what's going on in the code, hence the callback hell.
 One possible way we can improve the code above is to improve the code is
 to name the callbacks and reduce the indentation level of the named functions.
 
-```js
-var aBootTime = 1000,
-    bBootTime = 1000,
-    queueCallback = null,
-    serverHandler = null;
-
-serverA();
-serverB();
-
-function serverA() {
-    console.log("A: Booting up system...");
-    setTimeout(checkNetwork, aBootTime);
-
-    function checkNetwork() {
-        console.log("A: Checking network connection");
-        setTimeout(sendRequest, 500);
-    }
-
-    function sendRequest() {
-        console.log("A: Request complex computation");
-        sendNetworkRequest(callback);
-    }
-
-    function callback(value) {
-        console.log("A: Computation returned " + value);
-    }
-}
-
-function serverB() {
-    console.log("B: Booting up system...")
-    setTimeout(listenRequests, bBootTime);
-
-    function listenRequests() {
-        console.log("B: Server up and running");
-        serverHandler = handler;
-
-        if (queueCallback) {
-            serverHandler(queueCallback);
-            queueCallback = null;
-        }
-    }
-
-    function handler(callback) {
-        console.log("B: Starting heavy computation");
-        setTimeout(() => callback(42), 2000)
-    }
-}
-
-function sendNetworkRequest(callback) {
-    if(serverHandler) {
-        serverHandler(callback);
-    } else {
-        queueCallback = callback;
-    }
-}
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-```
+<a class="jsbin-embed" href="http://jsbin.com/gitexa/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 Even though it's now easier to follow, there's a lot of room for improvement.
 For that, let's go ahead to the next technique in our agenda.
@@ -180,85 +48,14 @@ The key point here is that, in every `.then` function call, a new Promise is
 returned when the previous callback is done. That allows us to chain Promises
 together, so we can compose really complex behaviors.
 
-```js
-new Promise(resolve => setTimeout(() => resolve("Hello World!"), 1000))
-    .then(value => {
-        console.log("Value!");
-        return new Promise(resolve => setTimeout(() => resolve("I'll be back"), 1000));
-    })
-    .then(value => console.log(value));
-// Value!
-// I'll be back
-```
+<a class="jsbin-embed" href="http://jsbin.com/wirava/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 With this new trick up our sleeves, let's try to rewrite our previous server
 example, but making use of the [Bluebird][1] library, which is an efficient
 implementation of Promises that has several support methods which we are going
 to use in these examples.
 
-```js
-var Promise = require("bluebird"),
-    aBootTime = 1000,
-    bBootTime = 1000,
-    promiseB;
-
-serverA();
-promiseB = serverB();
-
-function serverA() {
-    console.log("A: Booting up system...");
-    return Promise.delay(aBootTime)
-        .then(checkNetwork)
-        .delay(500)
-        .then(sendRequest);
-
-    setTimeout(checkNetwork, aBootTime);
-
-    function checkNetwork() {
-        console.log("A: Checking network connection");
-    }
-
-    function sendRequest() {
-        console.log("A: Request complex computation");
-        sendNetworkRequest(callback);
-    }
-
-    function callback(value) {
-        console.log("A: Computation returned " + value);
-    }
-}
-
-function serverB() {
-    console.log("B: Booting up system...")
-
-    return Promise.delay(bBootTime).then(listenRequests);
-
-    function listenRequests() {
-        console.log("B: Server up and running");
-        return serverHandler;
-    }
-
-    function serverHandler(callback) {
-        console.log("B: Starting heavy computation");
-        Promise.delay(2000).then(answerRequest);
-
-        function answerRequest() {
-            callback(42);
-        }
-    }
-}
-
-function sendNetworkRequest(callback) {
-    promiseB.then(serverHandler => serverHandler(callback));
-}
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-```
+<a class="jsbin-embed" href="http://jsbin.com/radetim/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 Notice that, in the snippet above, we've removed the shared state between
 the servers. Previously, it was used to keep track of which server was up and
@@ -274,49 +71,7 @@ await the return of promises, almost as if it was a synchronous function call.
 Our previous example become a lot simpler once we make use of the coroutine
 feature.
 
-```js
-var Promise = require("bluebird"),
-    delay = Promise.delay,
-    promisify = Promise.promisify,
-    coroutine = Promise.coroutine,
-    aBootTime = 1000,
-    bBootTime = 1000,
-    promiseB;
-
-coroutine(serverA)();
-promiseB = coroutine(serverB)();
-
-function* serverA() {
-    console.log("A: Booting up system...");
-    yield delay(aBootTime);
-    console.log("A: Checking network connection");
-    yield delay(500);
-    console.log("A: Request complex computation");
-    var serverHandler = yield promiseB;
-    var value = yield serverHandler();
-    console.log("A: Computation returned " + value);
-}
-
-function* serverB() {
-    console.log("B: Booting up system...")
-    yield delay(bBootTime);
-    console.log("B: Server up and running");
-    return promisify(coroutine(serverHandler));
-
-    function* serverHandler(callback) {
-        console.log("B: Starting heavy computation");
-        yield delay(2000);
-        callback(null, 42);
-    }
-}
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-```
+<a class="jsbin-embed" href="http://jsbin.com/munujid/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 In the snippet above, the `coroutine` function takes in a generator `function*`,
 which makes it possible to `yield` promises, get their response, and resume
@@ -393,20 +148,7 @@ order functions (such as map, filter and reduce) over streams of asynchronous
 events. It makes it a more appropriate tool for when you have to manipulate
 several asynchronous events at once.  
 
-```js
-var Rx = require("rx");
-
-Rx.Observable
-    .interval(500)
-    .map(x => x + 1)
-    .takeWhile(x => x <= 3)
-    .concat(Rx.Observable.of("World"))
-    .subscribe(x => console.log("Hello " + x + "!"));
-// Hello 1!
-// Hello 2!
-// Hello 3!
-// Hello World!
-```
+<a class="jsbin-embed" href="http://jsbin.com/yurobav/embed?html,js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 In the snippet above, we make use of `map`, `takeWhile` and `concat` just as
 if we were working with an array. The difference here is that the events
@@ -415,72 +157,7 @@ happen over time.
 Now, we are going to try to make use of Reactive Extensions to implement our
 server communication example.
 
-```js
-var Promise = require("bluebird"),
-    Rx = require("rx"),
-    aBootTime = 1000,
-    bBootTime = 1000,
-    observableB;
-
-serverA();
-observableB = serverB();
-
-function serverA() {
-    console.log("A: Booting up system...");
-    return Rx.Observable.timer(aBootTime)
-        .do(checkNetwork)
-        .delay(500)
-        .flatMap(sendRequest)
-        .subscribe(observer);
-
-    setTimeout(checkNetwork, aBootTime);
-
-    function checkNetwork() {
-        console.log("A: Checking network connection");
-    }
-
-    function sendRequest() {
-        console.log("A: Request complex computation");
-        return Rx.Observable.fromCallback(sendNetworkRequest)();
-    }
-
-    function observer(value) {
-        console.log("A: Computation returned " + value);
-    }
-}
-
-function serverB() {
-    console.log("B: Booting up system...")
-    var subject = new Rx.AsyncSubject();
-    Rx.Observable.timer(bBootTime).map(listenRequests).subscribe(subject);
-    return subject;
-
-    function listenRequests() {
-        console.log("B: Server up and running");
-        return serverHandler;
-    }
-
-    function serverHandler(callback) {
-        console.log("B: Starting heavy computation");
-        Rx.Observable.timer(2000).subscribe(answerRequest);
-
-        function answerRequest() {
-            callback(42);
-        }
-    }
-}
-
-function sendNetworkRequest(callback) {
-    observableB.subscribe(serverHandler => serverHandler(callback));
-}
-// A: Booting up system...
-// B: Booting up system...
-// A: Checking network connection
-// B: Server up and running
-// A: Request complex computation
-// B: Starting heavy computation
-// A: Computation returned 42
-```
+<a class="jsbin-embed" href="http://jsbin.com/danowu/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
 
 In the snippet above, we make use of an AsyncSubject in order for the Observable
 result to be readily available when we subscribe to it. If you want to learn
@@ -508,6 +185,18 @@ to it, it blocks.
 
 The [js-csp][7] library manages to implement it in JavaScript by also making a smart use of
 generators. Let's see how our servers example looks like with it.
+
+<script src="https://embed.tonicdev.com" data-element-id="my-element"></script>
+
+<!-- anywhere else on your page -->
+<div id="my-element">
+function foo()
+{
+    return console.log("hello world");
+}
+
+foo();
+</div>
 
 ```js
 var aBootTime = 1000,

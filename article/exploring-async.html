@@ -9,7 +9,26 @@
     <link type="text/css" rel="stylesheet" href="assets/css/hljs-github.min.css"/>
   </head>
   <body>
-    <article class="markdown-body"><h1 id="exploring-async-techniques-in-javascript">Exploring Async Techniques in JavaScript</h1>
+    <article class="markdown-body"><script src="https://embed.tonicdev.com"></script>
+
+<script src="https://rawgit.com/stackp/promisejs/master/promise.min.js"></script>
+
+<script>
+promise.get('https://rawgit.com/thalesmello/exploring-async/master/01_callback_hello_world.js')
+.then(function (err, data) {
+    console.log(data);
+
+    Tonic.createNotebook({
+        element: document.getElementById("my-element"),
+        source: data,
+        readOnly: false
+    })
+});
+</script>
+
+<div id="my-element"></div>
+
+<h1 id="exploring-async-techniques-in-javascript">Exploring Async Techniques in JavaScript</h1>
 <p>During the past few months, I&#39;ve been exploring a few different techniques that
 can be use to write asynchronous programs. I&#39;d like to share my experience via this essay.</p>
 <p>Even though we are using JavaScript for this, many of these techniques can be used
@@ -19,6 +38,9 @@ in other languages with equivalent manners.</p>
 and is used by almost all of the APIs in the language. It consists of passing
 a callback function as an argument in a function call, so the callback function
 is called when the desired behavior is supposed to happen.</p>
+<!-- anywhere else on your page -->
+<div id="snippet-01"></div>
+
 <pre class="hljs"><code>setTimeout(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Hello world!"</span>), <span class="hljs-number">1000</span>);
 <span class="hljs-comment">// Hello world!</span></code></pre><p>The problem here is that it can get messy really fast when you are
 trying to make more complex programs, which leads to the frequent problem
