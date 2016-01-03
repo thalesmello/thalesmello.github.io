@@ -1,11 +1,9 @@
 var gulp = require('gulp'),
     mds = require('markdown-styles'),
-    path = require('path');
+    path = require('path'),
+    del = require('del');
 
-
-
-
-gulp.task('default', (done) => {
+gulp.task('default', ['clean_articles'], (done) => {
   var opts = mds.resolveArgs({
     input: path.normalize(process.cwd() + '/pre-article'),
     output: path.normalize(process.cwd() + '/article'),
@@ -13,4 +11,8 @@ gulp.task('default', (done) => {
   });
 
   mds.render(opts, done);
+});
+
+gulp.task('clean_articles', function () {
+  return del('article');
 });
